@@ -1,0 +1,8 @@
+{
+  "version": "1.4.0",
+  "build": 1,
+  "bundleId": "com.yg.aurora",
+  "displayName": "极光",
+  "channel": "stable",
+  "minIOS": "16.0"
+}

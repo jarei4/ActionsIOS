@@ -1,0 +1,41 @@
+# 依赖与产物
+node_modules/
+build/
+dist/
+DerivedData/
+*.xcarchive
+tools/zsign/
+
+# 运行期数据（数据库、密钥、审计日志）
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+
+# 签名材料：证书与描述文件绝不入库
+signing/*.p12
+signing/*.pfx
+signing/*.cer
+signing/*.mobileprovision
+signing/*.provisionprofile
+signing/pass*.txt
+signing/secrets/
+!signing/*.example
+
+# 测试与临时产物
+tools/test/out/
+_.tmp
+*.log
+
+# Xcode 个人设置（工程文件本身必须入库）
+*.xcuserdatad/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# 系统噪声
+.DS_Store
+Thumbs.db
+desktop.ini

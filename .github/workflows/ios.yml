@@ -1,0 +1,92 @@
+name: ios
+
+# 只在需要时构建：打 tag、手动触发、或 iOS 相关源码变更
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: '打包进 App 的服务端地址'
+        required: false
+        default: 'http://192.168.1.10:8787'
+  pull_request:
+    paths:
+      - 'ios/**'
+      - 'tools/**'
+      - 'version.json'
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 未签名 IPA：产物交给本机重签 ──────────────────────────────
+  build-ipa:
+    name: build unsigned IPA
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 显示环境
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks | tail -n 5
+          node -e "console.log('version.json →', require('./version.json'))"
+
+      - name: 生成图标
+        run: node tools/gen-icons.js
+
+      - name: 构建未签名 IPA
+        env:
+          API_BASE_URL: ${{ github.event.inputs.api_base_url || 'http://192.168.1.10:8787' }}
+        run: |
+          chmod +x tools/build-ipa.sh
+          tools/build-ipa.sh
+
+      - name: 行李清单
+        run: |
+          ls -lh dist/
+          unzip -l dist/*.ipa | head -n 20
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Aurora-unsigned-${{ github.run_number }}
+          path: dist/*.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+  # ── 后端：冒烟测试（矩阵跑一次就够，但必须真跑） ──────────────
+  server-smoke:
+    name: server smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 冒烟测试
+        run: node tools/smoke.js
+      - name: 图标可复现性
+        run: |
+          node tools/gen-icons.js
+          git diff --exit-code -- ios/AuroraApp/Assets.xcassets public/icons
+
+  # ── 重签工具链：在 Windows 上自检，保证交付给用户前是通的 ────
+  signing-tools:
+    name: signing toolchain self-test
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 自检（30 项断言）
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/test-signing-tools.ps1

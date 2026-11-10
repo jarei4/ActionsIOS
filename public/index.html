@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05060b">
+<meta name="color-scheme" content="dark">
+<!-- 装到主屏后全屏运行，无浏览器边框；这条不依赖签名，也不会 7 天掉签 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="极光">
+<meta name="application-name" content="极光">
+<title>极光控制台</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/console.css">
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <span class="blob blob-a"></span>
+  <span class="blob blob-b"></span>
+  <span class="blob blob-c"></span>
+  <span class="veil"></span>
+</div>
+
+<!-- ── 登录 ───────────────────────────────────────────── -->
+<main id="auth" class="view auth" hidden>
+  <div class="auth-inner">
+    <div class="mark" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="dot"></span>
+    </div>
+
+    <h1 class="wordmark">AURORA</h1>
+    <p class="tagline">极光控制台 · 你的条目只属于你</p>
+
+    <section class="panel auth-card">
+      <div class="segmented" role="tablist">
+        <button id="tab-login" class="seg is-active" role="tab" aria-selected="true">登录</button>
+        <button id="tab-register" class="seg" role="tab" aria-selected="false">创建账号</button>
+      </div>
+
+      <form id="auth-form" novalidate>
+        <label class="field">
+          <span class="field-icon" aria-hidden="true">@</span>
+          <input id="email" type="email" autocomplete="username" placeholder="邮箱" required>
+        </label>
+
+        <label class="field">
+          <span class="field-icon" aria-hidden="true">&#9679;</span>
+          <input id="password" type="password" autocomplete="current-password" placeholder="密码" required>
+          <button id="reveal" class="ghost" type="button" aria-label="显示密码">显示</button>
+        </label>
+
+        <p id="auth-hint" class="hint" hidden></p>
+
+        <button id="submit" class="primary" type="submit">
+          <span class="label">进入控制台</span>
+          <span class="spinner" hidden></span>
+        </button>
+      </form>
+
+      <p class="fineprint">首次使用请先创建账号，第一个账号自动成为主控。</p>
+    </section>
+
+    <footer class="foot">
+      <span id="server-chip" class="chip-static"></span>
+      <span id="version-chip" class="chip-static dim"></span>
+    </footer>
+  </div>
+</main>
+
+<!-- ── 主控台 ─────────────────────────────────────────── -->
+<main id="board" class="view board" hidden>
+  <header class="board-head">
+    <div class="head-text">
+      <p id="greeting" class="eyebrow">你好</p>
+      <h2 id="who" class="who">极光</h2>
+    </div>
+    <div class="head-actions">
+      <button id="refresh" class="icon-btn" title="刷新 (R)" aria-label="刷新">&#8635;</button>
+      <button id="open-settings" class="avatar" aria-label="设置"></button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="panel ring-card">
+      <svg viewBox="0 0 100 100" class="ring-chart" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" class="ring-track"></circle>
+        <circle id="ring-fill" cx="50" cy="50" r="42" class="ring-value"></circle>
+      </svg>
+      <div class="ring-label">
+        <strong id="pct">0</strong>
+        <span>完成度</span>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="panel stat"><span class="stat-k">待办</span><strong id="s-open">0</strong></div>
+      <div class="panel stat hot"><span class="stat-k">紧急</span><strong id="s-urgent">0</strong></div>
+      <div class="panel stat"><span class="stat-k">完成</span><strong id="s-done">0</strong></div>
+      <div class="panel stat warn"><span class="stat-k">逾期</span><strong id="s-overdue">0</strong></div>
+    </div>
+  </section>
+
+  <section class="toolbar">
+    <label class="search">
+      <span aria-hidden="true">/</span>
+      <input id="search" type="search" placeholder="搜索标题、正文、标签">
+    </label>
+    <button id="new-note" class="primary compact">新建</button>
+  </section>
+
+  <nav id="filters" class="filters" aria-label="筛选"></nav>
+
+  <section id="notes" class="notes" aria-live="polite"></section>
+</main>
+
+<!-- ── 条目编辑 ───────────────────────────────────────── -->
+<dialog id="editor" class="editor">
+  <form id="editor-form" method="dialog">
+    <header class="editor-head">
+      <button type="button" id="editor-cancel" class="ghost">取消</button>
+      <h3 id="editor-title">新建条目</h3>
+      <span id="editor-rev" class="dim"></span>
+    </header>
+
+    <label class="stack">
+      <span class="eyebrow">标题</span>
+      <input id="n-title" type="text" maxlength="120" placeholder="要做什么？" required>
+    </label>
+
+    <label class="stack">
+      <span class="eyebrow">正文</span>
+      <textarea id="n-body" rows="5" maxlength="4000" placeholder="补充细节、链接、上下文…"></textarea>
+    </label>
+
+    <div class="stack">
+      <span class="eyebrow">优先级</span>
+      <div id="priority" class="chips"></div>
+    </div>
+
+    <label class="stack">
+      <span class="eyebrow">标签 · 空格分隔，最多 4 个</span>
+      <input id="n-tags" type="text" placeholder="#发布 #复盘">
+    </label>
+
+    <label class="stack">
+      <span class="eyebrow">截止时间</span>
+      <input id="n-due" type="datetime-local">
+    </label>
+
+    <button id="editor-save" class="primary" type="submit">保存</button>
+  </form>
+</dialog>
+
+<!-- ── 设置 ───────────────────────────────────────────── -->
+<dialog id="settings" class="editor">
+  <div class="editor-head">
+    <span></span>
+    <h3>设置</h3>
+    <button type="button" id="settings-close" class="ghost">关闭</button>
+  </div>
+  <div id="settings-body" class="settings-body"></div>
+  <button id="signout" class="danger">退出登录</button>
+</dialog>
+
+<div id="toast" class="toast" hidden aria-live="assertive"></div>
+
+<script src="/assets/console.js" type="module"></script>
+</body>
+</html>

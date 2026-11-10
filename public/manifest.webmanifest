@@ -1,0 +1,15 @@
+{
+  "name": "极光控制台",
+  "short_name": "极光",
+  "description": "自建条目控制台：极简、玻璃质感、单账号体系",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05060b",
+  "theme_color": "#05060b",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

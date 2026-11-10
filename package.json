@@ -1,0 +1,20 @@
+{
+  "name": "aurora-console",
+  "version": "1.4.0",
+  "private": true,
+  "type": "module",
+  "description": "Aurora Console — 全栈极光任务台（前端 + 后端 + iOS 自签容器）",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "icons": "node tools/gen-icons.js",
+    "smoke": "node tools/smoke.js",
+    "test:web": "node tools/test-web.mjs",
+    "test": "node tools/smoke.js && node tools/test-web.mjs",
+    "version": "node -e \"console.log(require('./package.json').version)\""
+  },
+  "dependencies": {}
+}
